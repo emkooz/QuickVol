@@ -1,0 +1,1 @@
+Example of an asset that will be copied over in the build process.
