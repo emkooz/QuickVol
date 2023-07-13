@@ -15,7 +15,7 @@ export class mainCamera {
 	private constructor(scene?: three.Scene) {
 		/* These defaults are a good average for most use cases */
 		this.camera = new three.PerspectiveCamera(this.settings.fov, window.innerWidth / window.innerHeight, 0.1, 10000);
-		this.camera.position.z = 25;
+		this.camera.position.y = 25;
 
 		this.controls = new ArcballControls(this.camera, document.getElementById("content")!, scene);
 		this.controls.enableGizmos = this.settings.gizmosEnabled;

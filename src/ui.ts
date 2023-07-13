@@ -1,4 +1,4 @@
-import { Pane } from "tweakpane";
+import { FolderApi, Pane } from "tweakpane";
 import * as EssentialsPlugin from "@tweakpane/plugin-essentials";
 import { mainCamera } from "./camera";
 
@@ -7,6 +7,9 @@ import { mainCamera } from "./camera";
 export class UI {
 	pane = new Pane();
 	fpsGraph: any;
+	volFolder: FolderApi;
+
+	dropzone = document.getElementById("dropzone")!;
 
 	private static instance: UI;
 	private constructor() {
@@ -25,6 +28,23 @@ export class UI {
 
 		this.pane.addInput(cam.controls, "enableGizmos", { label: "Gizmos" }).on("change", (ev) => {
 			cam.controls.setGizmosVisible(ev.value);
+		});
+
+		this.volFolder = this.pane.addFolder({ title: "Volume" });
+
+		document.addEventListener("dragenter", (ev) => {
+			ev.preventDefault();
+			this.dropzone.style.visibility = "visible";
+		});
+
+		document.addEventListener("dragover", (ev) => {
+			ev.preventDefault();
+			this.dropzone.style.visibility = "visible";
+		});
+
+		document.addEventListener("dragleave", (ev) => {
+			ev.preventDefault();
+			this.dropzone.style.visibility = "hidden";
 		});
 	}
 

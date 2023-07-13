@@ -5,6 +5,8 @@ import { UI } from "./ui";
 
 import { UnlitCubes } from "./unlit_cubes";
 
+import { Volume } from "./volume/volume";
+
 export class Scene {
 	/* base scene elements */
 	canvas: HTMLCanvasElement;
@@ -14,13 +16,14 @@ export class Scene {
 	camera: mainCamera;
 	ui: UI;
 
-	cubes: UnlitCubes;
+	vol: Volume;
 
 	private static instance: Scene;
 
 	private constructor() {
 		this.canvas = document.querySelector("#mainCanvas")!;
-		this.renderer = new three.WebGLRenderer({ canvas: this.canvas, antialias: true });
+		this.renderer = new three.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true, premultipliedAlpha: false });
+		this.renderer.setClearColor(new three.Color(0, 0, 0), 1.0);
 		this.scene = new three.Scene();
 
 		this.renderer.setAnimationLoop(() => {
@@ -31,8 +34,7 @@ export class Scene {
 
 		this.ui = UI.getInstance();
 
-		this.cubes = new UnlitCubes(new three.Vector3(5, 5, 5), new three.Vector3(-5, -5, -5));
-		this.scene.add(this.cubes.cubeMesh);
+		this.vol = new Volume(this, "./volumes/skull.nrrd");
 	}
 
 	render() {
