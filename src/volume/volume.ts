@@ -169,11 +169,16 @@ export class Volume {
 		cam.controls.update();
 
 		this.updateUniforms();
+
+		scene.render();
 	}
 
 	setupUI(scene: Scene) {
 		const folder = scene.ui.volFolder;
-		folder.on("change", () => this.updateUniforms());
+		folder.on("change", () => {
+			this.updateUniforms();
+			scene.render();
+		});
 
 		// clear the previous UI if it exists from the prev volume
 		folder.children.forEach((child) => folder.remove(child));
@@ -197,8 +202,8 @@ export class Volume {
 				{} as { [key: string]: string }
 			),
 		});
-		visuals.addInput(this.config, "cm_lower", { min: 0, max: 1, step: 0.01 });
-		visuals.addInput(this.config, "cm_upper", { min: 0, max: 1, step: 0.01 });
+		visuals.addInput(this.config, "cm_lower", { min: 0, max: 1, step: 0.01, label: "CM Lower bound" });
+		visuals.addInput(this.config, "cm_upper", { min: 0, max: 1, step: 0.01, label: "CM Upper bound" });
 		visuals.addInput(this.config, "zmax", { min: 0, max: this.obj.zLength, step: 1, label: "Max Z stack" });
 
 		performance.addInput(this.config, "auto_perf", { label: "Dynamic performance" });

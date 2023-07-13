@@ -26,11 +26,8 @@ export class Scene {
 		this.renderer.setClearColor(new three.Color(0, 0, 0), 1.0);
 		this.scene = new three.Scene();
 
-		this.renderer.setAnimationLoop(() => {
-			this.render();
-		});
-
 		this.camera = mainCamera.getInstance(this.scene);
+		this.camera.controls.addEventListener("change", () => this.render());
 
 		this.ui = UI.getInstance();
 

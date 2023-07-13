@@ -18,13 +18,9 @@ export class UI {
 
 		this.fpsGraph = this.pane.addBlade({
 			view: "fpsgraph",
-			label: "FPS",
+			label: "FPS (while active)",
 			lineCount: 2,
 		});
-
-		this.pane.addMonitor(cam.camera.position, "x", { interval: 20 });
-		this.pane.addMonitor(cam.camera.position, "y", { interval: 20 });
-		this.pane.addMonitor(cam.camera.position, "z", { interval: 20 });
 
 		this.pane.addInput(cam.controls, "enableGizmos", { label: "Gizmos" }).on("change", (ev) => {
 			cam.controls.setGizmosVisible(ev.value);
