@@ -1,6 +1,14 @@
-# QuickVol
+<h1 align="center">
+	<img src="./public/icon.svg" width="25%" style="padding-bottom:1rem;">
+	</br>
+	QuickVol
 
-No frills NRRD visualizer in the browser.
+<h3 align="center">
+	<div >Fast and easy NRRD visualizer for the browser.</div>
+	</br>
+	Demo link: <a href="https://emkooz.github.io/QuickVol/">emkooz.github.io/QuickVol</a>
+</h3>
+</h1>
 
 ## Installation
 
@@ -11,7 +19,7 @@ No frills NRRD visualizer in the browser.
 
 If deploying remotely (such as to Github Pages), make sure to change `base` in _vite.config.js_ to the base URL that the page will be hosted on. Example: if hosting on example.com/coolwebpage, change `base` to `/coolwebpage/`
 
-## Usage
+## Local Development
 
 -   `pnpm dev` will start a local vite server which will reload on any changes.
 -   `pnpm build` will compile the required files for distribution into the `dist` folder.

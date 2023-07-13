@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="175.22491"
+   height="144.8248"
+   viewBox="0 0 175.22492 144.82479"
+   version="1.1"
+   id="SVGRoot"
+   xml:space="preserve"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+     id="defs9" /><g
+     id="layer1"
+     transform="translate(-312.38927,-375.13325)"><g
+       id="g150"
+       style="fill:#000000"><path
+         id="path162"
+         style="fill:#5b01a4;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-linejoin:round"
+         d="m 400.96899,376.91375 73.00762,19.51191 v 80.13386 l -73.00762,-31.9893 z"
+         points="473.97661,396.42566 473.97661,476.55952 400.96899,444.57022 400.96899,376.91375 " /><path
+         id="path152"
+         style="fill:#353564;fill-rule:evenodd;stroke:none;stroke-linejoin:round"
+         d="m 331.71084,396.78815 v 79.24323 l 69.25815,-31.46116 v -67.65647 z"
+         points="331.71084,476.03138 400.96899,444.57022 400.96899,376.91375 331.71084,396.78815 " /><path
+         id="path160"
+         style="fill:#8608a6;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-linejoin:round"
+         d="m 331.71084,476.03138 72.85154,45.70718 69.41423,-45.17904 -73.00762,-31.9893 z"
+         points="404.56238,521.73856 473.97661,476.55952 400.96899,444.57022 331.71084,476.03138 " /><path
+         id="path154"
+         style="fill:#5b01a4;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-linejoin:round"
+         d="M 331.71084,396.78815 404.56238,424.82 473.97661,396.42566 400.96899,376.91375 Z"
+         points="404.56238,424.82 473.97661,396.42566 400.96899,376.91375 331.71084,396.78815 " /><path
+         id="path158"
+         style="fill:#a82297;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-linejoin:round"
+         d="m 404.56238,424.82 v 96.91856 l 69.41423,-45.17904 v -80.13386 z"
+         points="404.56238,521.73856 473.97661,476.55952 473.97661,396.42566 404.56238,424.82 " /><path
+         id="path156"
+         style="fill:#8608a6;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-linejoin:round"
+         d="M 331.71084,396.78815 404.56238,424.82 v 96.91856 l -72.85154,-45.70718 z"
+         points="404.56238,424.82 404.56238,521.73856 331.71084,476.03138 331.71084,396.78815 " /></g><g
+       id="g452"
+       transform="matrix(1.0342011,0,0,1.0342011,1.7440598,-22.300585)"
+       style="fill:#ef7d50;fill-opacity:1"><path
+         id="rect286"
+         style="fill:#ef7d50;fill-opacity:1;stroke:#e56a5e;stroke-width:0.790025;stroke-opacity:1"
+         d="m 422.57757,435.89931 11.58201,11.0959 c -48.0348,46.62127 -114.87195,-5.33437 -121.85658,-9.93904 -6.98461,-4.60467 -15.51353,3.04687 -9.49235,8.39008 6.12132,5.4321 81.28866,65.12541 144.10566,14.08516 l 11.33091,11.53043 11.02214,-46.06454 z" /></g></g></svg>
