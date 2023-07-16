@@ -22,3 +22,9 @@ body {
 #stats {
 	height: auto;
 }
+
+#webcam,
+#handCanvas {
+	-webkit-transform: scaleX(-1);
+	transform: scaleX(-1);
+}

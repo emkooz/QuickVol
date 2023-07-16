@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@mediapipe/tasks-vision':
+    specifier: ^0.10.2
+    version: 0.10.2
   '@tweakpane/plugin-essentials':
     specifier: ^0.1.8
     version: 0.1.8(tweakpane@3.1.10)
@@ -282,6 +285,10 @@ packages:
       '@jridgewell/resolve-uri': 3.1.0
       '@jridgewell/sourcemap-codec': 1.4.14
     dev: true
+
+  /@mediapipe/tasks-vision@0.10.2:
+    resolution: {integrity: sha512-d8Q9uRK89ZRWmED2JLI9/blpJcfdbh0iEUuMo8TgkMzNfQBY1/GC0FEJWrairTwHkxIf6Oud1vFBP+aHicWqJA==}
+    dev: false
 
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}

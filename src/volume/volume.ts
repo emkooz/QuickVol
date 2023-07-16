@@ -171,6 +171,9 @@ export class Volume {
 		this.updateUniforms();
 
 		scene.render();
+
+		const loadingLogo = document.getElementById("loadingLogo")!;
+		loadingLogo.style.display = "none";
 	}
 
 	setupUI(scene: Scene) {

@@ -2,10 +2,8 @@ import * as three from "three";
 
 import { mainCamera } from "./camera";
 import { UI } from "./ui";
-
-import { UnlitCubes } from "./unlit_cubes";
-
 import { Volume } from "./volume/volume";
+import { Hands } from "./hands";
 
 export class Scene {
 	/* base scene elements */
@@ -17,6 +15,7 @@ export class Scene {
 	ui: UI;
 
 	vol: Volume;
+	hands: Hands;
 
 	private static instance: Scene;
 
@@ -32,6 +31,7 @@ export class Scene {
 		this.ui = UI.getInstance();
 
 		this.vol = new Volume(this, "./volumes/skull.nrrd");
+		this.hands = Hands.getInstance(this.ui);
 	}
 
 	render() {
