@@ -22,9 +22,11 @@ export class Volume {
 		auto_perf: false,
 		zmax: 1000,
 		lower_mip_bound: 0.2,
+		loadedExampleVolume: "skull.nrrd",
 	};
 
 	colors = ["gray", "viridis", "red_alpha", "rainbow", "spectral", "inferno"];
+	exampleVolumes = ["allen_human_umap.nrrd", "RFP-128.nrrd", "skull.nrrd", "teapot.nrrd", "tooth.nrrd"];
 
 	colormaps = this.colors.reduce(
 		(acc, color) => {
@@ -36,6 +38,21 @@ export class Volume {
 
 	constructor(scene: Scene, url?: string) {
 		if (url) this.loadNRRD(url, scene);
+
+		scene.ui.pane
+			.addInput(this.config, "loadedExampleVolume", {
+				options: this.exampleVolumes.reduce(
+					(acc, vol) => {
+						acc[vol] = vol;
+						return acc;
+					},
+					{} as { [key: string]: string }
+				),
+				label: "Load examples",
+			})
+			.on("change", (ev) => {
+				this.loadNRRD(`./volumes/${ev.value}`, scene);
+			});
 
 		document.addEventListener("drop", (ev) => {
 			ev.preventDefault();
@@ -117,6 +134,7 @@ export class Volume {
 		this.texture = new three.Data3DTexture(volume.data as any, volume.xLength, volume.yLength, volume.zLength);
 		this.texture.format = three.RedFormat;
 		this.texture.type = three.UnsignedByteType;
+		// this.texture.type = three.FloatType;
 		this.texture.minFilter = this.texture.magFilter = three.LinearFilter;
 		this.texture.unpackAlignment = 1;
 		this.texture.needsUpdate = true;
@@ -208,8 +226,20 @@ export class Volume {
 		visuals.addInput(this.config, "cm_lower", { min: 0, max: 1, step: 0.01, label: "CM Lower bound" });
 		visuals.addInput(this.config, "cm_upper", { min: 0, max: 1, step: 0.01, label: "CM Upper bound" });
 		visuals.addInput(this.config, "zmax", { min: 0, max: this.obj.zLength, step: 1, label: "Max Z stack" });
+		visuals
+			.addInput(this.texture, "type", {
+				options: {
+					UnsignedByteType: three.UnsignedByteType,
+					FloatType: three.FloatType,
+				},
+				label: "Texture type",
+			})
+			.on("change", (ev) => {
+				this.texture.type = ev.value;
+				this.texture.needsUpdate = true;
+			});
 
-		performance.addInput(this.config, "auto_perf", { label: "Dynamic performance" });
+		// performance.addInput(this.config, "auto_perf", { label: "Dynamic performance" });
 		performance.addInput(this.config, "step_size", { min: 1, max: 50, step: 0.2 });
 		performance.addInput(this.config, "sample_modulo", { min: 1, max: 5, step: 0.2 });
 

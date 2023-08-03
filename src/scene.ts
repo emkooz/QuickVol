@@ -3,7 +3,9 @@ import * as three from "three";
 import { mainCamera } from "./camera";
 import { UI } from "./ui";
 import { Volume } from "./volume/volume";
+import { HandsTracker } from "./hands_tracking";
 import { Hands } from "./hands";
+import { CameraHelper } from "./scene_helper";
 
 export class Scene {
 	/* base scene elements */
@@ -12,9 +14,11 @@ export class Scene {
 	scene: three.Scene;
 
 	camera: mainCamera;
+	cameraHelper: CameraHelper;
 	ui: UI;
 
 	vol: Volume;
+	handsTracker: HandsTracker;
 	hands: Hands;
 
 	private static instance: Scene;
@@ -23,6 +27,7 @@ export class Scene {
 		this.canvas = document.querySelector("#mainCanvas")!;
 		this.renderer = new three.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true, premultipliedAlpha: false });
 		this.renderer.setClearColor(new three.Color(0, 0, 0), 1.0);
+		this.renderer.autoClear = false;
 		this.scene = new three.Scene();
 
 		this.camera = mainCamera.getInstance(this.scene);
@@ -31,7 +36,10 @@ export class Scene {
 		this.ui = UI.getInstance();
 
 		this.vol = new Volume(this, "./volumes/skull.nrrd");
-		this.hands = Hands.getInstance(this.ui);
+		this.handsTracker = HandsTracker.getInstance(this.ui, this);
+		this.hands = Hands.getInstance(this.handsTracker, this.camera);
+
+		this.cameraHelper = CameraHelper.getInstance(this.camera.mainCam, this.scene, this.ui);
 	}
 
 	render() {
@@ -40,7 +48,20 @@ export class Scene {
 		// update camera if scene resized
 		this.camera.resizeCam(this.canvas, this.renderer);
 
+		this.hands.update();
+
+		this.renderer.clear();
+		this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+
+		if (this.cameraHelper.enabled) this.cameraHelper.helper.visible = false;
+
 		this.renderer.render(this.scene, this.camera.mainCam);
+
+		if (this.cameraHelper.enabled) {
+			this.cameraHelper.helper.visible = true;
+			this.renderer.setViewport(window.innerWidth - window.innerWidth / 3, 0, window.innerWidth / 3, window.innerHeight / 3);
+			this.renderer.render(this.scene, this.cameraHelper.helperCamera);
+		}
 
 		this.ui.fpsGraph.end();
 	}

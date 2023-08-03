@@ -17,7 +17,10 @@ export class mainCamera {
 		this.camera = new three.PerspectiveCamera(this.settings.fov, window.innerWidth / window.innerHeight, 0.1, 10000);
 		this.camera.position.y = 25;
 
-		this.controls = new ArcballControls(this.camera, document.getElementById("content")!, scene);
+		if (scene) scene.add(this.camera);
+
+		/// @ts-ignore
+		this.controls = new ArcballControls(this.camera, document.getElementById("mainCanvas")!, scene);
 		this.controls.enableGizmos = this.settings.gizmosEnabled;
 	}
 
