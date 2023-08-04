@@ -36,6 +36,8 @@ export class Scene {
 		this.ui = UI.getInstance();
 
 		this.vol = new Volume(this, "./volumes/skull.nrrd");
+		this.ui.pane.addButton({ title: "Screenshot" }).on("click", () => this.screenshot());
+
 		this.handsTracker = HandsTracker.getInstance(this.ui, this);
 		this.hands = Hands.getInstance(this.handsTracker, this.camera);
 
@@ -64,6 +66,34 @@ export class Scene {
 		}
 
 		this.ui.fpsGraph.end();
+	}
+
+	screenshot() {
+		this.renderer.setClearColor(new three.Color(0, 0, 0), 0.0);
+
+		this.cameraHelper.helper.visible = false;
+		const gizmosEnabled = this.camera.controls.enableGizmos;
+		this.camera.controls.setGizmosVisible(false);
+
+		this.render();
+
+		this.canvas.toBlob((blob) => {
+			if (blob) {
+				const a = document.createElement("a");
+				document.body.appendChild(a);
+				a.style.display = "none";
+				a.href = URL.createObjectURL(blob);
+				a.download = `QuickVol-${Date.now()}.png`;
+				a.click();
+				URL.revokeObjectURL(a.href);
+				document.body.removeChild(a);
+			}
+		});
+
+		this.cameraHelper.helper.visible = this.cameraHelper.enabled;
+		this.camera.controls.setGizmosVisible(gizmosEnabled);
+
+		this.renderer.setClearColor(new three.Color(0, 0, 0), 1.0);
 	}
 
 	static getInstance() {
