@@ -3,6 +3,7 @@ import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import { type Volume as volObj } from "three/examples/jsm/misc/Volume";
 import { VolumeShader } from "./volume_shader";
 import { type Scene } from "../scene";
+import { FolderApi } from "tweakpane";
 
 export class Volume {
 	obj!: volObj;
@@ -11,10 +12,13 @@ export class Volume {
 	mat!: three.ShaderMaterial;
 	mesh!: three.Mesh;
 
+	visualsFolder: FolderApi | null = null;
+	performanceFolder: FolderApi | null = null;
+
 	config = {
 		threshold: 0.0,
 		style: "mip",
-		colormap: "viridis",
+		colormap: "inferno",
 		cm_lower: 0,
 		cm_upper: 1,
 		step_size: 1.0,
@@ -25,8 +29,8 @@ export class Volume {
 		loadedExampleVolume: "skull.nrrd",
 	};
 
-	colors = ["gray", "viridis", "red_alpha", "rainbow", "spectral", "inferno"];
-	exampleVolumes = ["allen_human_umap.nrrd", "RFP-128.nrrd", "skull.nrrd", "teapot.nrrd", "tooth.nrrd"];
+	colors = ["viridis", "inferno", "rainbow", "spectral", "gray", "red_alpha"];
+	exampleVolumes = ["arlotta.nrrd", "RFP-128.nrrd", "skull.nrrd", "teapot.nrrd", "tooth.nrrd"];
 
 	colormaps = this.colors.reduce(
 		(acc, color) => {
@@ -39,7 +43,7 @@ export class Volume {
 	constructor(scene: Scene, url?: string) {
 		if (url) this.loadNRRD(url, scene);
 
-		scene.ui.pane
+		scene.ui.volFolder
 			.addInput(this.config, "loadedExampleVolume", {
 				options: this.exampleVolumes.reduce(
 					(acc, vol) => {
@@ -98,11 +102,11 @@ export class Volume {
 			new NRRDLoader().load(
 				url,
 				(volume) => {
-					this.loadVolume(volume, scene);
-
 					// setup status info
 					const name = document.getElementById("volumeName");
 					name!.textContent = `${url.replace(/^.*[\\\/]/, "")}`;
+
+					this.loadVolume(volume, scene, name!.textContent);
 				},
 				(ev: ProgressEvent) => {
 					console.log(`${url} loaded: ${ev.loaded} / ${ev.total}`);
@@ -124,7 +128,7 @@ export class Volume {
 		}
 	}
 
-	loadVolume(volume: volObj, scene: Scene) {
+	loadVolume(volume: volObj, scene: Scene, name = "") {
 		const shader = VolumeShader;
 
 		this.obj = volume;
@@ -133,7 +137,7 @@ export class Volume {
 		// setup 3d texture
 		this.texture = new three.Data3DTexture(volume.data as any, volume.xLength, volume.yLength, volume.zLength);
 		this.texture.format = three.RedFormat;
-		this.texture.type = three.UnsignedByteType;
+		this.texture.type = name === "arlotta.nrrd" ? three.FloatType : three.UnsignedByteType;
 		// this.texture.type = three.FloatType;
 		this.texture.minFilter = this.texture.magFilter = three.LinearFilter;
 		this.texture.unpackAlignment = 1;
@@ -144,7 +148,7 @@ export class Volume {
 		uniforms["u_size"].value.set(volume.xLength, volume.yLength, volume.zLength);
 		uniforms["u_data"].value = this.texture;
 		uniforms["u_clim"].value.set(0, 1);
-		uniforms["u_cmdata"].value = this.colormaps["viridis"];
+		uniforms["u_cmdata"].value = this.colormaps[this.config.colormap];
 		uniforms["u_threshold"].value = this.config.threshold;
 		uniforms["u_style"].value = 0;
 		uniforms["u_step_size"].value = 1.0;
@@ -202,19 +206,28 @@ export class Volume {
 		});
 
 		// clear the previous UI if it exists from the prev volume
-		folder.children.forEach((child) => folder.remove(child));
+		if (this.visualsFolder && this.performanceFolder) {
+			folder.remove(this.visualsFolder);
+			folder.remove(this.performanceFolder);
+		}
 
-		const visuals = folder.addFolder({ title: "Visuals" });
-		const performance = folder.addFolder({ title: "Performance" });
+		this.visualsFolder = folder.addFolder({ title: "Visuals" });
+		this.performanceFolder = folder.addFolder({ title: "Performance" });
 
-		const threshold = visuals.addInput(this.config, "threshold", {
+		this.visualsFolder.addInput(this.config, "style", { options: { mip: "mip", iso: "iso" }, label: "Method" }).on("change", (ev) => {
+			threshold.disabled = ev.value === "mip";
+			if (ev.value === "mip") this.config.threshold = 0;
+			scene.ui.pane.refresh();
+		});
+
+		const threshold = this.visualsFolder.addInput(this.config, "threshold", {
 			min: 0,
 			max: 1,
 			step: 0.01,
 			label: "Threshold",
 			disabled: this.config.style !== "iso",
 		});
-		visuals.addInput(this.config, "colormap", {
+		this.visualsFolder.addInput(this.config, "colormap", {
 			options: this.colors.reduce(
 				(acc, color) => {
 					acc[color] = color;
@@ -223,10 +236,10 @@ export class Volume {
 				{} as { [key: string]: string }
 			),
 		});
-		visuals.addInput(this.config, "cm_lower", { min: 0, max: 1, step: 0.01, label: "CM Lower bound" });
-		visuals.addInput(this.config, "cm_upper", { min: 0, max: 1, step: 0.01, label: "CM Upper bound" });
-		visuals.addInput(this.config, "zmax", { min: 0, max: this.obj.zLength, step: 1, label: "Max Z stack" });
-		visuals
+		this.visualsFolder.addInput(this.config, "cm_lower", { min: 0, max: 1, step: 0.01, label: "CM Lower bound" });
+		this.visualsFolder.addInput(this.config, "cm_upper", { min: 0, max: 1, step: 0.01, label: "CM Upper bound" });
+		this.visualsFolder.addInput(this.config, "zmax", { min: 0, max: this.obj.zLength, step: 1, label: "Max Z stack" });
+		this.visualsFolder
 			.addInput(this.texture, "type", {
 				options: {
 					UnsignedByteType: three.UnsignedByteType,
@@ -240,14 +253,8 @@ export class Volume {
 			});
 
 		// performance.addInput(this.config, "auto_perf", { label: "Dynamic performance" });
-		performance.addInput(this.config, "step_size", { min: 1, max: 50, step: 0.2 });
-		performance.addInput(this.config, "sample_modulo", { min: 1, max: 5, step: 0.2 });
-
-		folder.addInput(this.config, "style", { options: { mip: "mip", iso: "iso" }, label: "Method" }).on("change", (ev) => {
-			threshold.disabled = ev.value === "mip";
-			if (ev.value === "mip") this.config.threshold = 0;
-			scene.ui.pane.refresh();
-		});
+		this.performanceFolder.addInput(this.config, "step_size", { min: 1, max: 50, step: 0.2 });
+		this.performanceFolder.addInput(this.config, "sample_modulo", { min: 1, max: 5, step: 0.2 });
 	}
 
 	updateUniforms() {

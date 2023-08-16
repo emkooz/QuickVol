@@ -22,7 +22,7 @@ export class CameraHelper {
 		scene.add(this.helper);
 		scene.add(this.helperCamera);
 
-		ui.pane.addInput(this, "enabled", { label: "Camera Helper" }).on("change", (ev) => {
+		ui.tabs.pages[1].addInput(this, "enabled", { label: "Camera Helper" }).on("change", (ev) => {
 			this.enabled = ev.value;
 			this.helper.visible = ev.value;
 		});

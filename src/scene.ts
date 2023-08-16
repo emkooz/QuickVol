@@ -36,7 +36,7 @@ export class Scene {
 		this.ui = UI.getInstance();
 
 		this.vol = new Volume(this, "./volumes/skull.nrrd");
-		this.ui.pane.addButton({ title: "Screenshot" }).on("click", () => this.screenshot());
+		this.ui.volFolder.addButton({ title: "Screenshot" }).on("click", () => this.screenshot());
 
 		this.handsTracker = HandsTracker.getInstance(this.ui, this);
 		this.hands = Hands.getInstance(this.handsTracker, this.camera);

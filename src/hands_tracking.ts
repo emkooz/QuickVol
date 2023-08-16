@@ -3,11 +3,14 @@ import { HandLandmarker, FilesetResolver, DrawingUtils, type HandLandmarkerResul
 import { UI } from "./ui";
 
 import { Scene } from "./scene";
+import { ButtonApi } from "tweakpane";
 
 export class HandsTracker {
 	webcam = document.getElementById("webcam")! as HTMLVideoElement;
 	canvas = document.getElementById("handCanvas")! as HTMLCanvasElement;
 	ctx = this.canvas.getContext("2d")!;
+	startButton: ButtonApi;
+	toggleButton: ButtonApi;
 	landmarker?: HandLandmarker;
 	result?: HandLandmarkerResult;
 	drawingUtil = new DrawingUtils(this.ctx);
@@ -16,12 +19,13 @@ export class HandsTracker {
 	private static instance: HandsTracker;
 	private constructor(ui: UI, scene: Scene) {
 		this.scene = scene;
-		this.setupUI(ui);
-	}
 
-	setupUI(ui: UI) {
-		const handFolder = ui.pane.addFolder({ title: "Hand Tracking" });
-		handFolder.addButton({ title: "Start tracking" }).on("click", () => this.setupTracking());
+		const handFolder = ui.tabs.pages[0].addFolder({ title: "Hand Tracking" });
+		this.startButton = handFolder.addButton({ title: "Start tracking" }).on("click", () => this.setupTracking());
+		this.toggleButton = handFolder.addButton({ title: "Pause tracking" }).on("click", () => {
+			this.toggleButton.title = this.toggleButton.title === "Pause tracking" ? "Resume tracking" : "Pause tracking";
+		});
+		this.toggleButton.disabled = true;
 	}
 
 	async setupTracking() {
@@ -72,6 +76,8 @@ export class HandsTracker {
 			this.canvas.height = height;
 
 			statusBar.textContent += "Hand tracker loaded.\n";
+			this.startButton.disabled = true;
+			this.toggleButton.disabled = false;
 		} catch (err) {
 			console.error(err);
 			statusBar.textContent += "Error loading hand tracker, check console for more details.\n";
@@ -79,7 +85,7 @@ export class HandsTracker {
 	}
 
 	async predict() {
-		if (this.landmarker) {
+		if (this.landmarker && this.startButton.disabled && this.toggleButton.title === "Pause tracking") {
 			const { width, height } = this.webcam.getBoundingClientRect();
 
 			this.result = this.landmarker.detectForVideo(this.webcam, performance.now());
@@ -89,7 +95,7 @@ export class HandsTracker {
 
 			if (this.result.landmarks.length > 0) {
 				for (const landmark of this.result.landmarks) {
-					this.drawingUtil.drawConnectors(landmark, HandLandmarker.HAND_CONNECTIONS, { color: "#00FF00", lineWidth: 5 });
+					this.drawingUtil.drawConnectors(landmark, HandLandmarker.HAND_CONNECTIONS, { color: "#00FF00", lineWidth: 3 });
 					this.drawingUtil.drawLandmarks(landmark, { color: "#FF0000", lineWidth: 1 });
 				}
 			}

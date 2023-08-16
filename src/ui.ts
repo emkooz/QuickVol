@@ -2,10 +2,11 @@ import { FolderApi, Pane } from "tweakpane";
 import * as EssentialsPlugin from "@tweakpane/plugin-essentials";
 import { mainCamera } from "./camera";
 
-/* Small class that uses tweakpane for UI */
-
 export class UI {
 	pane = new Pane();
+	tabs = this.pane.addTab({
+		pages: [{ title: "Volume" }, { title: "Debug" }],
+	});
 	fpsGraph: any;
 	volFolder: FolderApi;
 
@@ -16,17 +17,17 @@ export class UI {
 		const cam = mainCamera.getInstance();
 		this.pane.registerPlugin(EssentialsPlugin);
 
-		this.fpsGraph = this.pane.addBlade({
+		this.fpsGraph = this.tabs.pages[1].addBlade({
 			view: "fpsgraph",
 			label: "FPS (while active)",
 			lineCount: 2,
 		});
 
-		this.pane.addInput(cam.controls, "enableGizmos", { label: "Gizmos" }).on("change", (ev) => {
+		this.volFolder = this.tabs.pages[0].addFolder({ title: "Volume" });
+
+		this.volFolder.addInput(cam.controls, "enableGizmos", { label: "Gizmos" }).on("change", (ev) => {
 			cam.controls.setGizmosVisible(ev.value);
 		});
-
-		this.volFolder = this.pane.addFolder({ title: "Volume" });
 
 		document.addEventListener("dragenter", (ev) => {
 			ev.preventDefault();

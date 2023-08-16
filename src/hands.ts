@@ -50,8 +50,8 @@ export class Hands {
 
 	light = new three.PointLight(0xffffff, 1, 0);
 	geo = new three.SphereGeometry(0.66, 32, 32);
-	mat = new three.MeshStandardMaterial({ color: new three.Color("orange"), side: three.DoubleSide });
-	matSelected = new three.MeshStandardMaterial({ color: new three.Color("green"), side: three.DoubleSide });
+	mat = new three.MeshStandardMaterial({ color: new three.Color("coral"), side: three.DoubleSide });
+	matSelected = new three.MeshStandardMaterial({ color: new three.Color("cornflowerblue"), side: three.DoubleSide });
 
 	hands = new three.Group();
 	leftHand = new three.Group();
@@ -61,7 +61,8 @@ export class Hands {
 	rightPoints = new three.Group();
 
 	lineArray: Float32Array;
-	lineMat = new three.LineBasicMaterial({ color: 0xff0000 });
+	lineMat = new three.LineBasicMaterial({ color: new three.Color("coral") });
+	lineMatSelected = new three.LineBasicMaterial({ color: new three.Color("cornflowerblue") });
 	leftLine: three.LineSegments;
 	rightLine: three.LineSegments;
 
@@ -79,6 +80,10 @@ export class Hands {
 		},
 		left: {
 			pinching: false,
+			index: {
+				x: -1,
+				y: -1,
+			},
 		},
 	};
 
@@ -142,12 +147,20 @@ export class Hands {
 				document.getElementById("mainCanvas")!.dispatchEvent(upEvent);
 
 				this.state.right.pinching = false;
+				this.state.left.pinching = false;
 				this.camera.controls.rotateSpeed = 1;
 			}
 			this.hands.visible = false;
 			return;
 		}
-		if (!this.hands.visible) this.hands.visible = true;
+		if (!this.hands.visible) {
+			// set hands visible after 250ms, ignore before that as hands can be in odd positions
+			setTimeout(() => {
+				this.hands.visible = true;
+			}, 250);
+
+			return;
+		}
 
 		const res = this.tracker.result;
 		this.updatePositions(res);
@@ -158,10 +171,40 @@ export class Hands {
 		const rightPinching = rightPoints[4].position.distanceTo(rightPoints[8].position) < 5;
 		const leftPinching = leftPoints[4].position.distanceTo(leftPoints[8].position) < 5;
 
-		if (rightPinching && !this.state.right.pinching) {
+		if (rightPinching && leftPinching && !this.state.left.pinching) {
+			// started pinching left and right
+			this.setLeftPinching(true, leftPoints);
+			const { x, y } = this.#objectToScreenSpace(leftPoints[8]);
+
+			this.state.left.index.x = Math.round(x);
+			this.state.left.index.y = Math.round(y);
+		} else if (rightPinching && leftPinching && this.state.right.pinching && this.state.left.pinching) {
+			// still pinching left and right, send wheel event with delta
+			const { x, y } = this.#objectToScreenSpace(leftPoints[8]);
+
+			if (Math.round(x) != this.state.left.index.x || Math.round(y) != this.state.left.index.y) {
+				const wheelEvent = new WheelEvent("wheel", {
+					clientX: 0,
+					clientY: 0,
+					deltaY: this.state.left.index.x !== -1 ? (x - this.state.left.index.x) * -7 : 0, // covering a race condition
+					...this.basePointerEvent,
+				});
+
+				this.state.left.index.x = Math.round(x);
+				this.state.left.index.y = Math.round(y);
+
+				document.getElementById("mainCanvas")!.dispatchEvent(wheelEvent);
+			}
+		} else if (!leftPinching && this.state.left.pinching && rightPinching) {
+			// stopped pinching left
+			this.setLeftPinching(false, leftPoints);
+		} else if (rightPinching && !this.state.right.pinching) {
+			// started pinching right
 			this.setRightPinching(true, rightPoints);
 		} else if (!rightPinching && this.state.right.pinching) {
+			// stopped pinching right
 			this.setRightPinching(false, rightPoints);
+			this.setLeftPinching(false, leftPoints);
 		} else if (rightPinching && this.state.right.pinching) {
 			// still pinching, send move event
 			const { x, y } = this.#objectToScreenSpace(rightPoints[8]);
@@ -184,6 +227,15 @@ export class Hands {
 		this.state.left.pinching = leftPinching;
 	}
 
+	setLeftPinching(pinching: boolean, leftPoints: three.Mesh[]) {
+		leftPoints.forEach((point) => {
+			point.material = pinching ? this.matSelected : this.mat;
+		});
+
+		this.leftPalm.material = pinching ? this.matSelected : this.mat;
+		this.leftLine.material = pinching ? this.lineMatSelected : this.lineMat;
+	}
+
 	setRightPinching(pinching: boolean, rightPoints: three.Mesh[]) {
 		const { x, y } = this.#objectToScreenSpace(rightPoints[8]);
 
@@ -195,9 +247,12 @@ export class Hands {
 
 		this.camera.controls.rotateSpeed = pinching ? 3 : 1;
 
-		rightPoints[4].material = pinching ? this.matSelected : this.mat;
-		rightPoints[8].material = pinching ? this.matSelected : this.mat;
+		rightPoints.forEach((point) => {
+			point.material = pinching ? this.matSelected : this.mat;
+		});
+
 		this.rightPalm.material = pinching ? this.matSelected : this.mat;
+		this.rightLine.material = pinching ? this.lineMatSelected : this.lineMat;
 
 		document.getElementById("mainCanvas")!.dispatchEvent(event);
 	}
