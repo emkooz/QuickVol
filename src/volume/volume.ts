@@ -29,7 +29,7 @@ export class Volume {
 		loadedExampleVolume: "skull.nrrd",
 	};
 
-	colors = ["viridis", "inferno", "rainbow", "spectral", "gray", "red_alpha"];
+	colors = ["viridis", "inferno", "parula", "hot", "cool", "rainbow", "spectral", "gray", "red_alpha", "discrete"];
 	exampleVolumes = ["arlotta.nrrd", "RFP-128.nrrd", "skull.nrrd", "teapot.nrrd", "tooth.nrrd"];
 
 	colormaps = this.colors.reduce(

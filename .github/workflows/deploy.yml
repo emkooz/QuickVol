@@ -1,0 +1,67 @@
+name: deploy
+run-name: Deploying main from push by ${{ github.actor }}
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Setup node
+              uses: actions/setup-node@v3
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v2
+              with:
+                  version: latest
+                  run_install: true
+
+            - name: Get pnpm store dir
+              shell: bash
+              run: |
+                  echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+            - name: Setup pnpm cache
+              uses: actions/cache@v3
+              with:
+                  path: ${{ env.STORE_PATH }}
+                  key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pnpm-store-
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Build
+              run: pnpm run build
+
+            - name: Upload dist files as pages artifact
+              uses: actions/upload-pages-artifact@v2
+              with:
+                  path: ./dist
+
+    deploy:
+        name: Deploy
+        needs: build
+        runs-on: ubuntu-latest
+
+        permissions:
+            pages: write
+            id-token: write
+
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+
+        steps:
+            - name: Deploy to Github Pages
+              id: deployment
+              uses: actions/deploy-pages@v2
