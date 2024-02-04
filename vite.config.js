@@ -15,5 +15,5 @@ export default defineConfig({
 		outDir: "dist",
 	},
 
-	plugins: [compression({ deleteOriginalAssets: true })],
+	plugins: [compression()],
 });
