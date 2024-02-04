@@ -27,10 +27,22 @@ export class Volume {
 		zmax: 1000,
 		lower_mip_bound: 0.2,
 		loadedExampleVolume: "skull.nrrd",
+		refinement_steps: 5,
 	};
 
 	colors = ["viridis", "inferno", "parula", "hot", "cool", "rainbow", "spectral", "gray", "red_alpha", "discrete"];
-	exampleVolumes = ["arlotta.nrrd", "RFP-128.nrrd", "skull.nrrd", "teapot.nrrd", "tooth.nrrd"];
+	exampleVolumes = [
+		"arlotta.nrrd",
+		"RFP-128.nrrd",
+		"skull.nrrd",
+		"teapot.nrrd",
+		"tooth.nrrd",
+		"VisMale.nrrd",
+		"bonsai.nrrd",
+		"foot.nrrd",
+		"frog.nrrd",
+		"hydrogen_atom.nrrd",
+	];
 
 	colormaps = this.colors.reduce(
 		(acc, color) => {
@@ -155,6 +167,7 @@ export class Volume {
 		uniforms["u_sample_modulo"].value = 1.0;
 		uniforms["u_zmax"].value = volume.zLength;
 		uniforms["u_lower_bound_mip"].value = 0.3;
+		uniforms["u_refinement_steps"].value = 5;
 
 		// setup shader material
 		this.mat = new three.ShaderMaterial({
@@ -255,6 +268,7 @@ export class Volume {
 		// performance.addInput(this.config, "auto_perf", { label: "Dynamic performance" });
 		this.performanceFolder.addInput(this.config, "step_size", { min: 1, max: 50, step: 0.2 });
 		this.performanceFolder.addInput(this.config, "sample_modulo", { min: 1, max: 5, step: 0.2 });
+		this.performanceFolder.addInput(this.config, "refinement_steps", { min: 1, max: 10, step: 1 });
 	}
 
 	updateUniforms() {
@@ -268,5 +282,6 @@ export class Volume {
 		uniforms.u_zmax.value = this.config.zmax;
 		uniforms.u_sample_modulo.value = this.config.sample_modulo;
 		uniforms.u_lower_bound_mip.value = this.config.lower_mip_bound;
+		uniforms.u_refinement_steps.value = this.config.refinement_steps;
 	}
 }

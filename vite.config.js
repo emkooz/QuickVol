@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { compression } from "vite-plugin-compression2";
 
 export default defineConfig({
 	publicDir: "src/assets",
@@ -13,4 +14,6 @@ export default defineConfig({
 		chunkSizeWarningLimit: 100000000,
 		outDir: "dist",
 	},
+
+	plugins: [compression({ deleteOriginalAssets: true })],
 });

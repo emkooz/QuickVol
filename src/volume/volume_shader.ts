@@ -52,6 +52,9 @@ export const VolumeShader = {
 		u_max_steps: {
 			value: 2500,
 		},
+		u_refinement_steps: {
+			value: 5,
+		},
 	},
 	vertexShaderNew: /*glsl*/ `
 	#pragma vscode_glsllint_stage : vert
@@ -68,13 +71,13 @@ export const VolumeShader = {
 	precision mediump sampler3D;
 
 	const float z_near = 0.0001;
-	const int refinementSteps = 4;
 
 	// fragment pos in object space
 	varying vec3 fragPos;
 
 	uniform int u_style;
 	uniform int u_zmax;
+	uniform int u_refinement_steps;
 	uniform vec3 u_size;
 	uniform vec2 u_clim;
 	uniform sampler3D u_data;
@@ -117,6 +120,9 @@ export const VolumeShader = {
 					 altHit, normals, uvs, face);
 		vec3 hitPos = camRay.pos + (camRay.dir * altHit.x);
 		float distance = length(hitPos - (camRay.pos + (camRay.dir * altHit.y)));
+
+		if (distance < 1.)
+			discard;
 
 		Ray raycast;
 		raycast.pos = hitPos;
@@ -167,9 +173,9 @@ export const VolumeShader = {
 		// get a more accurate position
 		if (notCulled == 1) {
 			vec3 refinedPos = maxPos - (ray.dir * (u_step_size * 0.5));
-			vec3 refinedStep = vec3(u_step_size) / float(refinementSteps);
+			vec3 refinedStep = vec3(u_step_size) / float(u_refinement_steps);
 
-			for (int i = 0; i < refinementSteps; i++) {
+			for (int i = 0; i < u_refinement_steps; i++) {
 				maxVal = max(maxVal, sampleVal(refinedPos)); // partial div may have undefined value
 				refinedPos += refinedStep;
 			}
@@ -187,46 +193,39 @@ export const VolumeShader = {
 	}
 
 	void cast_iso(Ray ray, float distance, mat4 model) {
+		gl_FragColor = vec4(0.0);
 		mat4 iModel = inverse(model);
 		ray.pos = (iModel * vec4(ray.pos, 1.0)).xyz;
-		ray.dir = (iModel * vec4(ray.dir, 0.0)).xyz;
-		vec3 dStep = 1.5 / u_size; // derivative step size
+		ray.dir = normalize((iModel * vec4(ray.dir, 0.0)).xyz);
 
 		float low_threshold = u_threshold - 0.02 * (u_clim[1] - u_clim[0]);
 
-		int notCulled = 0;
 		float steps = 0.f;
 		vec3 currentPos = ray.pos;
-		while (steps < u_max_steps) {
-			if (steps > distance)
-				break;
-
+		while (steps < distance) {
 			if (currentPos.z > float(u_zmax) - (u_size.z / 2.)) {
 				currentPos += ray.dir * u_step_size;
 				steps += u_step_size;
 				continue;
 			}
 
-			notCulled = 1;
-
 			float val = sampleVal(currentPos);
 
 			if (val > low_threshold) {
-				vec3 refinedPos = currentPos - (0.5 * u_step_size);
-				vec3 refinedStep = vec3(u_step_size) / float(10.0);
+				vec3 refinedStep = vec3(u_step_size) / float(u_refinement_steps);
+				vec3 refinedPos = currentPos;			
 
-				for (int i = 0; i < refinementSteps; i++) {
+				for (int i = 0; i < u_refinement_steps; i++) {
 					val = sampleVal(refinedPos);
 
 					if (val > u_threshold) {
-						Ray curRay = Ray(currentPos, ray.dir);
-						gl_FragColor = add_lighting(val, curRay, refinedStep) * vec4(float(notCulled));
+						Ray curRay = Ray(refinedPos, ray.dir);
+						gl_FragColor = add_lighting(val, curRay, vec3(1.));
 						return;
 					}
 
-					refinedPos += refinedStep;
+					refinedPos -= ray.dir * refinedStep;
 				}
-				
 			}
 
 			currentPos += ray.dir * u_step_size;
@@ -255,23 +254,23 @@ export const VolumeShader = {
 		normal[2] = val1 - val2;
 		val = max(max(val1, val2), val);
 
-		float magnitude = length(normal);
+		normal = normalize(normal);
 
 		// point normal to viewer
 		float nSelect = float(dot(normal, view) > 0.0);
 		normal = (2.0 * nSelect - 1.0) * normal;
 
 		// initial colors
-		vec4 ambient = vec4(0.5, 0.5, 0.5, 0.0);
-		vec4 diffuse = vec4(0.0, 0.0, 0.0, 0.0);
-		vec4 specular = vec4(0.0, 0.0, 0.0, 0.0);
+		vec4 ambient = vec4(0.0, 0.0, 0.0, 0.0);
+		vec4 diffuse = vec4(0.5, 0.5, 0.5, 0.0);
+		vec4 specular = vec4(0.1, 0.1, 0.1, 0.0);
 
 		// light dir
 		float lightEnabled = float(length(view) > 0.0);
 		vec3 light = normalize(view + (1.0 - lightEnabled));
 
 		// light properties
-		const float shininess = 40.0;
+		const float shininess = 32.0;
 		float lambertTerm = clamp(dot(normal, light), 0.0, 1.0);
 		vec3 halfway = normalize(light + view);
 		float specularTerm = pow(max(dot(halfway, normal), 0.0), shininess);
@@ -283,7 +282,7 @@ export const VolumeShader = {
 
 		// final color with color map
 		vec4 mapColor = apply_colormap(val);
-		vec4 finalColor = mapColor * (ambient + diffuse) + specular;
+		vec4 finalColor = mapColor * (ambient + diffuse + specular);
 		finalColor.a = mapColor.a;
 		return finalColor;
 	}
