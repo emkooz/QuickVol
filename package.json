@@ -11,7 +11,7 @@
 	},
 	"devDependencies": {
 		"@tweakpane/core": "^1.1.9",
-		"@types/three": "^0.154.0",
+		"@types/three": "^0.161.2",
 		"autoprefixer": "^10.4.14",
 		"gh-pages": "^4.0.0",
 		"postcss": "^8.4.27",
@@ -24,7 +24,7 @@
 	"dependencies": {
 		"@mediapipe/tasks-vision": "^0.10.3",
 		"@tweakpane/plugin-essentials": "^0.1.8",
-		"three": "^0.154.0",
+		"three": "^0.161.0",
 		"tweakpane": "^3.1.10"
 	}
 }

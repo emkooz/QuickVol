@@ -11,6 +11,7 @@ export class HandsTracker {
 	ctx = this.canvas.getContext("2d")!;
 	startButton: ButtonApi;
 	toggleButton: ButtonApi;
+	vrButton: ButtonApi;
 	landmarker?: HandLandmarker;
 	result?: HandLandmarkerResult;
 	drawingUtil = new DrawingUtils(this.ctx);
@@ -26,6 +27,20 @@ export class HandsTracker {
 			this.toggleButton.title = this.toggleButton.title === "Pause tracking" ? "Resume tracking" : "Pause tracking";
 		});
 		this.toggleButton.disabled = true;
+
+		this.vrButton = handFolder.addButton({ title: "Start VR view", disabled: !("xr" in navigator) }).on("click", () => {
+			this.scene.renderer.setAnimationLoop(() => this.scene.render());
+			// position volume in front of camera at 0,0,0
+
+			const scale = 50 / this.scene.vol.obj.yLength;
+			this.scene.vol.mesh.scale.setScalar(scale);
+			this.scene.vol.mesh.position.setZ(-(this.scene.vol.obj.yLength * scale) - 50);
+			// this.scene.vol.mesh.position.setY(-(this.scene.vol.obj.yLength * scale) / 2);
+
+			this.scene.vol.mesh.matrixWorldNeedsUpdate = true;
+
+			(this.scene.vrButton as HTMLButtonElement).click();
+		});
 	}
 
 	async setupTracking() {

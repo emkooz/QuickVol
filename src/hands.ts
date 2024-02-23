@@ -48,7 +48,7 @@ export class Hands {
 		[0, 13, 17],
 	];
 
-	light = new three.PointLight(0xffffff, 1, 0);
+	light = new three.PointLight(0xffffff, 10, 0);
 	geo = new three.SphereGeometry(0.66, 32, 32);
 	mat = new three.MeshStandardMaterial({ color: new three.Color("coral"), side: three.DoubleSide });
 	matSelected = new three.MeshStandardMaterial({ color: new three.Color("cornflowerblue"), side: three.DoubleSide });
@@ -131,100 +131,112 @@ export class Hands {
 		this.camera.camera.add(this.light);
 		this.camera.camera.add(this.hands);
 		this.hands.position.set(0, 0, -33);
-		this.hands.visible = false;
+		this.hands.visible = true;
 	}
 
 	update() {
-		if (!this.tracker.result || !this.tracker.result.handednesses[0]) {
-			// stop pinching if hand is not detected
-			if (this.state.right.pinching) {
-				const upEvent = new PointerEvent("pointercancel", {
-					clientX: this.state.right.index.x,
-					clientY: this.state.right.index.y,
-					...this.basePointerEvent,
-				});
+		const handsWorld = new three.Vector3();
+		const cameraWorld = new three.Vector3();
+		this.hands.getWorldPosition(handsWorld);
+		this.camera.camera.getWorldPosition(cameraWorld);
 
-				document.getElementById("mainCanvas")!.dispatchEvent(upEvent);
+		console.log(handsWorld, cameraWorld);
 
-				this.state.right.pinching = false;
-				this.state.left.pinching = false;
-				this.camera.controls.rotateSpeed = 1;
+		// only process updates if controls are enabled, disable otherwise
+		if (this.camera.controls.enabled) {
+			if (!this.tracker.result || !this.tracker.result.handednesses[0]) {
+				// stop pinching if hand is not detected
+				if (this.state.right.pinching) {
+					const upEvent = new PointerEvent("pointercancel", {
+						clientX: this.state.right.index.x,
+						clientY: this.state.right.index.y,
+						...this.basePointerEvent,
+					});
+
+					document.getElementById("mainCanvas")!.dispatchEvent(upEvent);
+
+					this.state.right.pinching = false;
+					this.state.left.pinching = false;
+					this.camera.controls.rotateSpeed = 1;
+				}
+				this.hands.visible = false;
+				return;
 			}
-			this.hands.visible = false;
-			return;
-		}
-		if (!this.hands.visible) {
-			// set hands visible after 250ms, ignore before that as hands can be in odd positions
-			setTimeout(() => {
-				this.hands.visible = true;
-			}, 250);
+			if (!this.hands.visible) {
+				// set hands visible after 250ms, ignore before that as hands can be in odd positions
+				setTimeout(() => {
+					this.hands.visible = true;
+				}, 250);
 
-			return;
-		}
+				return;
+			}
 
-		const res = this.tracker.result;
-		this.updatePositions(res);
+			const res = this.tracker.result;
+			this.updatePositions(res);
 
-		const leftPoints = this.leftPoints.children as three.Mesh[];
-		const rightPoints = this.rightPoints.children as three.Mesh[];
+			const leftPoints = this.leftPoints.children as three.Mesh[];
+			const rightPoints = this.rightPoints.children as three.Mesh[];
 
-		const rightPinching = rightPoints[4].position.distanceTo(rightPoints[8].position) < 5;
-		const leftPinching = leftPoints[4].position.distanceTo(leftPoints[8].position) < 5;
+			const rightPinching = rightPoints[4].position.distanceTo(rightPoints[8].position) < 5;
+			const leftPinching = leftPoints[4].position.distanceTo(leftPoints[8].position) < 5;
 
-		if (rightPinching && leftPinching && !this.state.left.pinching) {
-			// started pinching left and right
-			this.setLeftPinching(true, leftPoints);
-			const { x, y } = this.#objectToScreenSpace(leftPoints[8]);
-
-			this.state.left.index.x = Math.round(x);
-			this.state.left.index.y = Math.round(y);
-		} else if (rightPinching && leftPinching && this.state.right.pinching && this.state.left.pinching) {
-			// still pinching left and right, send wheel event with delta
-			const { x, y } = this.#objectToScreenSpace(leftPoints[8]);
-
-			if (Math.round(x) != this.state.left.index.x || Math.round(y) != this.state.left.index.y) {
-				const wheelEvent = new WheelEvent("wheel", {
-					clientX: 0,
-					clientY: 0,
-					deltaY: this.state.left.index.x !== -1 ? (x - this.state.left.index.x) * -7 : 0, // covering a race condition
-					...this.basePointerEvent,
-				});
+			if (rightPinching && leftPinching && !this.state.left.pinching) {
+				// started pinching left and right
+				this.setLeftPinching(true, leftPoints);
+				const { x, y } = this.#objectToScreenSpace(leftPoints[8]);
 
 				this.state.left.index.x = Math.round(x);
 				this.state.left.index.y = Math.round(y);
+			} else if (rightPinching && leftPinching && this.state.right.pinching && this.state.left.pinching) {
+				// still pinching left and right, send wheel event with delta
+				const { x, y } = this.#objectToScreenSpace(leftPoints[8]);
 
-				document.getElementById("mainCanvas")!.dispatchEvent(wheelEvent);
+				if (Math.round(x) != this.state.left.index.x || Math.round(y) != this.state.left.index.y) {
+					const wheelEvent = new WheelEvent("wheel", {
+						clientX: 0,
+						clientY: 0,
+						deltaY: this.state.left.index.x !== -1 ? (x - this.state.left.index.x) * -7 : 0, // covering a race condition
+						...this.basePointerEvent,
+					});
+
+					this.state.left.index.x = Math.round(x);
+					this.state.left.index.y = Math.round(y);
+
+					document.getElementById("mainCanvas")!.dispatchEvent(wheelEvent);
+				}
+			} else if (!leftPinching && this.state.left.pinching && rightPinching) {
+				// stopped pinching left
+				this.setLeftPinching(false, leftPoints);
+			} else if (rightPinching && !this.state.right.pinching) {
+				// started pinching right
+				this.setRightPinching(true, rightPoints);
+			} else if (!rightPinching && this.state.right.pinching) {
+				// stopped pinching right
+				this.setRightPinching(false, rightPoints);
+				this.setLeftPinching(false, leftPoints);
+			} else if (rightPinching && this.state.right.pinching) {
+				// still pinching, send move event
+				const { x, y } = this.#objectToScreenSpace(rightPoints[8]);
+
+				if (Math.round(x) != this.state.right.index.x || Math.round(y) != this.state.right.index.y) {
+					const moveEvent = new PointerEvent("pointermove", {
+						clientX: x,
+						clientY: y,
+						...this.basePointerEvent,
+					});
+
+					this.state.right.index.x = Math.round(x);
+					this.state.right.index.y = Math.round(y);
+
+					window.dispatchEvent(moveEvent);
+				}
 			}
-		} else if (!leftPinching && this.state.left.pinching && rightPinching) {
-			// stopped pinching left
-			this.setLeftPinching(false, leftPoints);
-		} else if (rightPinching && !this.state.right.pinching) {
-			// started pinching right
-			this.setRightPinching(true, rightPoints);
-		} else if (!rightPinching && this.state.right.pinching) {
-			// stopped pinching right
-			this.setRightPinching(false, rightPoints);
-			this.setLeftPinching(false, leftPoints);
-		} else if (rightPinching && this.state.right.pinching) {
-			// still pinching, send move event
-			const { x, y } = this.#objectToScreenSpace(rightPoints[8]);
 
-			if (Math.round(x) != this.state.right.index.x || Math.round(y) != this.state.right.index.y) {
-				const moveEvent = new PointerEvent("pointermove", {
-					clientX: x,
-					clientY: y,
-					...this.basePointerEvent,
-				});
-
-				this.state.right.index.x = Math.round(x);
-				this.state.right.index.y = Math.round(y);
-
-				window.dispatchEvent(moveEvent);
-			}
+			this.state.right.pinching = rightPinching;
+			this.state.left.pinching = leftPinching;
+		} else {
+			this.hands.visible = false;
 		}
-
-		this.state.right.pinching = rightPinching;
-		this.state.left.pinching = leftPinching;
 	}
 
 	setLeftPinching(pinching: boolean, leftPoints: three.Mesh[]) {
