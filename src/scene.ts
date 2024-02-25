@@ -7,15 +7,19 @@ import { HandsTracker } from "./hands_tracking";
 import { Hands } from "./hands";
 import { CameraHelper } from "./scene_helper";
 
+import { VRButton } from "three/addons/webxr/VRButton";
+
 export class Scene {
 	/* base scene elements */
 	canvas: HTMLCanvasElement;
 	renderer: three.WebGLRenderer;
 	scene: three.Scene;
+	clock = new three.Clock();
 
 	camera: mainCamera;
 	cameraHelper: CameraHelper;
 	ui: UI;
+	vrButton: any;
 
 	vol: Volume;
 	handsTracker: HandsTracker;
@@ -28,29 +32,38 @@ export class Scene {
 		this.renderer = new three.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true, premultipliedAlpha: false });
 		this.renderer.setClearColor(new three.Color(0, 0, 0), 1.0);
 		this.renderer.autoClear = false;
+
+		this.vrButton = VRButton.createButton(this.renderer);
+		this.vrButton.style.display = "hidden";
+		// this.renderer.xr.enabled = true;
+
 		this.scene = new three.Scene();
 
-		this.camera = mainCamera.getInstance(this.scene);
+		this.camera = mainCamera.getInstance(this.scene, this.renderer);
 		this.camera.controls.addEventListener("change", () => this.render());
 
 		this.ui = UI.getInstance();
 
-		this.vol = new Volume(this, "./volumes/skull.nrrd");
+		this.vol = new Volume(this, "./volumes/VisMale.nrrd");
 		this.ui.volFolder.addButton({ title: "Screenshot" }).on("click", () => this.screenshot());
 
 		this.handsTracker = HandsTracker.getInstance(this.ui, this);
 		this.hands = Hands.getInstance(this.handsTracker, this.camera);
 
 		this.cameraHelper = CameraHelper.getInstance(this.camera.mainCam, this.scene, this.ui);
+
+		this.renderer.xr.setReferenceSpaceType("local-floor");
 	}
 
 	render() {
+		const delta = this.clock.getDelta();
 		this.ui.fpsGraph.begin();
 
 		// update camera if scene resized
 		this.camera.resizeCam(this.canvas, this.renderer);
 
 		this.hands.update();
+		this.vol.update(this.clock, delta, this.renderer.xr.getSession() !== null);
 
 		this.renderer.clear();
 		this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);

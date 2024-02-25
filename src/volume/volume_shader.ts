@@ -11,10 +11,10 @@ export const VolumeShader = {
 			value: new three.Vector2(0, 1),
 		},
 		u_data: {
-			value: null,
+			value: new three.Data3DTexture(),
 		},
 		u_cmdata: {
-			value: null,
+			value: new three.Texture(),
 		},
 		u_threshold: {
 			value: 0.0,

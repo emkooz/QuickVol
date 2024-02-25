@@ -11,6 +11,7 @@ export class Volume {
 	geo!: three.BoxGeometry;
 	mat!: three.ShaderMaterial;
 	mesh!: three.Mesh;
+	rotation = new three.Vector3().setScalar(Math.random() * (0.8 - 0.4) + 0.4);
 
 	visualsFolder: FolderApi | null = null;
 	performanceFolder: FolderApi | null = null;
@@ -26,7 +27,7 @@ export class Volume {
 		auto_perf: false,
 		zmax: 1000,
 		lower_mip_bound: 0.2,
-		loadedExampleVolume: "skull.nrrd",
+		loadedExampleVolume: "VisMale.nrrd",
 		refinement_steps: 5,
 	};
 
@@ -130,11 +131,11 @@ export class Volume {
 						progress!.textContent = "";
 					}, 3000);
 				},
-				(err: ErrorEvent) => {
-					console.log(`Error loading ${url}: ${err.message}`);
+				(err) => {
+					console.log(`Error loading ${url}: ${(err as ErrorEvent).message}`);
 
 					const error = document.getElementById("volumeError");
-					error!.textContent = `Error loading ${url}: ${err.message}`;
+					error!.textContent = `Error loading ${url}: ${(err as ErrorEvent).message}`;
 				}
 			);
 		}
@@ -187,6 +188,8 @@ export class Volume {
 		// setup three.js mesh
 		this.geo = new three.BoxGeometry(volume.xLength, volume.yLength, volume.zLength);
 		this.mesh = new three.Mesh(this.geo, this.mat);
+
+		this.mesh.rotation.set(Math.PI / 4, Math.PI, Math.PI / 4);
 		uniforms["u_modelMat"].value = this.mesh.matrixWorld;
 		uniforms["u_iModelMat"].value = this.mesh.matrixWorld.invert();
 		uniforms["u_max_steps"].value = 2500;
@@ -269,6 +272,15 @@ export class Volume {
 		this.performanceFolder.addInput(this.config, "step_size", { min: 1, max: 50, step: 0.2 });
 		this.performanceFolder.addInput(this.config, "sample_modulo", { min: 1, max: 5, step: 0.2 });
 		this.performanceFolder.addInput(this.config, "refinement_steps", { min: 1, max: 10, step: 1 });
+	}
+
+	// update rotation when in VR mode
+	update(clock: three.Clock, delta: number, active: boolean) {
+		if (active) {
+			this.mesh.rotateX(Math.cos(clock.elapsedTime) * this.rotation.x * delta);
+			this.mesh.rotateY(Math.sin(clock.elapsedTime) * this.rotation.y * delta);
+			this.mesh.rotateZ((Math.sin(clock.elapsedTime) + Math.cos(clock.elapsedTime)) * this.rotation.z * delta);
+		}
 	}
 
 	updateUniforms() {
