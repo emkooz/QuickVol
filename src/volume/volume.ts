@@ -189,6 +189,7 @@ export class Volume {
 		this.geo = new three.BoxGeometry(volume.xLength, volume.yLength, volume.zLength);
 		this.mesh = new three.Mesh(this.geo, this.mat);
 
+		this.mesh.layers.enableAll();
 		this.mesh.rotation.set(Math.PI / 4, Math.PI, Math.PI / 4);
 		uniforms["u_modelMat"].value = this.mesh.matrixWorld;
 		uniforms["u_iModelMat"].value = this.mesh.matrixWorld.invert();
