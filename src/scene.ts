@@ -70,7 +70,11 @@ export class Scene {
 
 		if (this.cameraHelper.enabled) this.cameraHelper.helper.visible = false;
 
-		this.renderer.render(this.scene, this.camera.mainCam);
+		if (this.renderer.xr.getSession() === null) {
+			this.renderer.render(this.scene, this.camera.mainCam);
+		} else {
+			for (const camera of this.camera.xrCamera.cameras) this.renderer.render(this.scene, camera);
+		}
 
 		if (this.cameraHelper.enabled) {
 			this.cameraHelper.helper.visible = true;
