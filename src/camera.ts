@@ -5,6 +5,7 @@ export class mainCamera {
 	rig = new three.Group();
 	camera: three.PerspectiveCamera;
 	xrCamera!: three.ArrayCamera;
+	xrOn = false;
 	controls: ArcballControls;
 	renderer!: three.WebGLRenderer;
 
@@ -25,6 +26,7 @@ export class mainCamera {
 			this.renderer = renderer;
 
 			renderer.xr.addEventListener("sessionstart", (ev) => {
+				this.xrOn = true;
 				this.controls.setGizmosVisible(false);
 			});
 

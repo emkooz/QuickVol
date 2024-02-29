@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { compression } from "vite-plugin-compression2";
+import basicSsl from "@vitejs/plugin-basic-ssl";
 
 export default defineConfig({
 	publicDir: "src/assets",
@@ -7,6 +8,7 @@ export default defineConfig({
 
 	server: {
 		open: true,
+		https: true,
 	},
 
 	build: {
@@ -15,5 +17,5 @@ export default defineConfig({
 		outDir: "dist",
 	},
 
-	plugins: [compression()],
+	plugins: [compression(), basicSsl()],
 });

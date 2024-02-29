@@ -52,7 +52,7 @@ export class Scene {
 
 		this.cameraHelper = CameraHelper.getInstance(this.camera.mainCam, this.scene, this.ui);
 
-		this.renderer.xr.setReferenceSpaceType("local-floor");
+		this.renderer.xr.setReferenceSpaceType("local");
 	}
 
 	render() {
@@ -65,12 +65,9 @@ export class Scene {
 		this.hands.update();
 		this.vol.update(this.clock, delta, this.renderer.xr.getSession() !== null);
 
-		this.renderer.clear();
-		this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-
 		if (this.cameraHelper.enabled) this.cameraHelper.helper.visible = false;
 
-		this.renderer.render(this.scene, this.camera.mainCam);
+		this.renderer.render(this.scene, this.camera.xrOn ? this.renderer.xr.getCamera()!.cameras[0] : this.camera.mainCam);
 
 		if (this.cameraHelper.enabled) {
 			this.cameraHelper.helper.visible = true;

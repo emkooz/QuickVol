@@ -7,7 +7,7 @@
 		"build-dev": "vite preview",
 		"deploy-pages": "vite build && yarn gh-pages -d dist -b dist -m \"dist commit\"",
 		"start": "vite",
-		"dev": "vite"
+		"dev": "vite --host"
 	},
 	"devDependencies": {
 		"@tweakpane/core": "^1.1.9",
@@ -24,6 +24,7 @@
 	"dependencies": {
 		"@mediapipe/tasks-vision": "^0.10.3",
 		"@tweakpane/plugin-essentials": "^0.1.8",
+		"@vitejs/plugin-basic-ssl": "^1.1.0",
 		"three": "^0.161.0",
 		"tweakpane": "^3.1.10"
 	}

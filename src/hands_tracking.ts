@@ -35,7 +35,7 @@ export class HandsTracker {
 			const scale = 50 / this.scene.vol.obj.yLength;
 			this.scene.vol.mesh.scale.setScalar(scale);
 			this.scene.vol.mesh.position.setZ(-(this.scene.vol.obj.yLength * scale) - 50);
-			// this.scene.vol.mesh.position.setY(-(this.scene.vol.obj.yLength * scale) / 2);
+			this.scene.vol.mesh.position.setY(-(this.scene.vol.obj.yLength * scale) / 4);
 
 			this.scene.vol.mesh.matrixWorldNeedsUpdate = true;
 
