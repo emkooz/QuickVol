@@ -6,9 +6,26 @@
 <h3 align="center">
 	<div >Fast and easy NRRD visualizer for the browser.</div>
 	</br>
-	Demo link: <a href="https://emkooz.github.io/QuickVol/">emkooz.github.io/QuickVol</a>
+	<span> Demo link: <a href="https://emkooz.github.io/QuickVol/">emkooz.github.io/QuickVol</a> </span>
+	</br>
+	</br>
+	<img src="./example.png" width="55%">
+
 </h3>
 </h1>
+
+## Usage
+
+Only NRRD files are currently supported. Other forms of voluemtric data (such as DICOM) must be converted to NRRD first.
+
+Hand tracking can be enabled using the "Start tracking" button. This requires a camera to be connected with permissions given.
+
+VR view can be enabled using the "Start VR view" button. This requires a device with WebXR capibilities to be connected with permissions given.
+
+Controls:
+- Rotate - left click (or single tap) and drag
+- Translate - Right click (or double tap) and drag
+- Scale - Scroll wheel (or double tap and pinch/expand)
 
 ## Installation
 
