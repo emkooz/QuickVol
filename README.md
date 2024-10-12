@@ -27,6 +27,8 @@ Controls:
 - Translate - Right click (or double tap) and drag
 - Scale - Scroll wheel (or double tap and pinch/expand)
 
+An example video of all views is included on the demo page.
+
 ## Installation
 
 1. Make sure [node.js](https://nodejs.org/en/download/) and [pNPM](https://pnpm.io/installation) are installed.

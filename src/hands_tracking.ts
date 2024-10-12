@@ -1,4 +1,9 @@
-import { HandLandmarker, FilesetResolver, DrawingUtils, type HandLandmarkerResult } from "@mediapipe/tasks-vision";
+import {
+	HandLandmarker,
+	FilesetResolver,
+	DrawingUtils,
+	type HandLandmarkerResult,
+} from "@mediapipe/tasks-vision";
 
 import { UI } from "./ui";
 
@@ -22,24 +27,42 @@ export class HandsTracker {
 		this.scene = scene;
 
 		const handFolder = ui.tabs.pages[0].addFolder({ title: "Hand Tracking" });
-		this.startButton = handFolder.addButton({ title: "Start tracking" }).on("click", () => this.setupTracking());
-		this.toggleButton = handFolder.addButton({ title: "Pause tracking" }).on("click", () => {
-			this.toggleButton.title = this.toggleButton.title === "Pause tracking" ? "Resume tracking" : "Pause tracking";
-		});
+		this.startButton = handFolder
+			.addButton({ title: "Start tracking" })
+			.on("click", () => this.setupTracking());
+		this.toggleButton = handFolder
+			.addButton({ title: "Pause tracking" })
+			.on("click", () => {
+				this.toggleButton.title =
+					this.toggleButton.title === "Pause tracking"
+						? "Resume tracking"
+						: "Pause tracking";
+			});
 		this.toggleButton.disabled = true;
 
-		this.vrButton = handFolder.addButton({ title: "Start VR view", disabled: !("xr" in navigator) }).on("click", () => {
-			this.scene.renderer.setAnimationLoop(() => this.scene.render());
-			// position volume in front of camera at 0,0,0
+		this.vrButton = handFolder
+			.addButton({ title: "Start VR view", disabled: !("xr" in navigator) })
+			.on("click", () => {
+				this.scene.renderer.setAnimationLoop(() => this.scene.render());
+				// position volume in front of camera at 0,0,0
 
-			const scale = 50 / this.scene.vol.obj.yLength;
-			this.scene.vol.mesh.scale.setScalar(scale);
-			this.scene.vol.mesh.position.setZ(-(this.scene.vol.obj.yLength * scale) - 50);
-			this.scene.vol.mesh.position.setY(-(this.scene.vol.obj.yLength * scale) / 4);
+				const scale = 50 / this.scene.vol.obj.yLength;
+				this.scene.vol.mesh.scale.setScalar(scale);
+				this.scene.vol.mesh.position.setZ(
+					-(this.scene.vol.obj.yLength * scale) - 50,
+				);
+				this.scene.vol.mesh.position.setY(
+					-(this.scene.vol.obj.yLength * scale) / 4,
+				);
 
-			this.scene.vol.mesh.matrixWorldNeedsUpdate = true;
+				this.scene.vol.mesh.matrixWorldNeedsUpdate = true;
 
-			(this.scene.vrButton as HTMLButtonElement).click();
+				(this.scene.vrButton as HTMLButtonElement).click();
+			});
+
+		// button to open link to example video
+		handFolder.addButton({ title: "Example video" }).on("click", () => {
+			window.open("https://streamable.com/oop3fr", "_blank");
 		});
 	}
 
@@ -59,7 +82,8 @@ export class HandsTracker {
 			})
 			.catch((err) => {
 				console.error(err);
-				statusBar.textContent += "Error loading webcam, check console for more details.\n";
+				statusBar.textContent +=
+					"Error loading webcam, check console for more details.\n";
 			})
 			.finally(() => {
 				setTimeout(() => {
@@ -95,23 +119,38 @@ export class HandsTracker {
 			this.toggleButton.disabled = false;
 		} catch (err) {
 			console.error(err);
-			statusBar.textContent += "Error loading hand tracker, check console for more details.\n";
+			statusBar.textContent +=
+				"Error loading hand tracker, check console for more details.\n";
 		}
 	}
 
 	async predict() {
-		if (this.landmarker && this.startButton.disabled && this.toggleButton.title === "Pause tracking") {
+		if (
+			this.landmarker &&
+			this.startButton.disabled &&
+			this.toggleButton.title === "Pause tracking"
+		) {
 			const { width, height } = this.webcam.getBoundingClientRect();
 
-			this.result = this.landmarker.detectForVideo(this.webcam, performance.now());
+			this.result = this.landmarker.detectForVideo(
+				this.webcam,
+				performance.now(),
+			);
 
 			this.ctx.save();
 			this.ctx.clearRect(0, 0, width, height);
 
 			if (this.result.landmarks.length > 0) {
 				for (const landmark of this.result.landmarks) {
-					this.drawingUtil.drawConnectors(landmark, HandLandmarker.HAND_CONNECTIONS, { color: "#00FF00", lineWidth: 3 });
-					this.drawingUtil.drawLandmarks(landmark, { color: "#FF0000", lineWidth: 1 });
+					this.drawingUtil.drawConnectors(
+						landmark,
+						HandLandmarker.HAND_CONNECTIONS,
+						{ color: "#00FF00", lineWidth: 3 },
+					);
+					this.drawingUtil.drawLandmarks(landmark, {
+						color: "#FF0000",
+						lineWidth: 1,
+					});
 				}
 			}
 
